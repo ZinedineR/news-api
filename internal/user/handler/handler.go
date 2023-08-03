@@ -75,7 +75,7 @@ func (h HTTPHandler) AsNotVerfied(ctx *gin.Context) {
 func (h HTTPHandler) AsDuplicateEmail(ctx *gin.Context) {
 	ctx.JSON(http.StatusUnauthorized, gin.H{
 		"responseCode":    "401",
-		"responseMessage": "Another account with same email already created",
+		"responseMessage": "Another account with same email/username already created",
 	})
 }
 
@@ -86,11 +86,10 @@ func (h HTTPHandler) AsDataNotFound(ctx *gin.Context) {
 	})
 }
 
-func (h HTTPHandler) AsJWTExist(ctx *gin.Context, token string) {
+func (h HTTPHandler) AsJWTExist(ctx *gin.Context) {
 	ctx.JSON(http.StatusUnauthorized, gin.H{
 		"responseCode":    "401",
 		"responseMessage": "You already login before",
-		"token":           token,
 	})
 }
 
@@ -322,123 +321,9 @@ func (h HTTPHandler) ThrowBadRequestException(ctx *app.Context, message string) 
 	return h.App.ThrowExceptionJson(ctx, http.StatusBadRequest, 0, "Bad Request", message)
 }
 
-func (h HTTPHandler) GetUserData(ctx *app.Context) *server.ResponseInterface {
-	//Declaring Variables
-	// idParam := ctx.Param("id")
-	// id, err := uuid.Parse(idParam)
-	// if err != nil {
-	// 	return h.AsJsonInterface(ctx, http.StatusBadRequest, err)
-	// }
-
-	tokenString := ctx.GetHeader("Authorization")
-	JWTRead, err := jwthelper.TokenRead(tokenString)
-	if err != nil {
-		return h.AsJsonInterface(ctx, http.StatusBadRequest, err)
-	}
-
-	if JWTRead.LastLogin.Day() == time.Now().Day() {
-
-		resp, err := h.UserService.Login(ctx, JWTRead.Email)
-		if err != nil {
-			return h.AsJsonInterface(ctx, http.StatusBadRequest, err)
-		}
-		if resp.Id == uuid.Nil {
-			return h.DataNotFound(ctx)
-		}
-		return h.AsJsonInterface(ctx, http.StatusAccepted, resp)
-
-	}
-
-	resp, err := h.UserService.Login(ctx, JWTRead.Email)
-	if err != nil {
-		return h.AsJsonInterface(ctx, http.StatusBadRequest, err)
-	}
-	if resp.Id == uuid.Nil {
-		return h.DataNotFound(ctx)
-	}
-	return h.AsJsonInterface(ctx, http.StatusAccepted, resp)
-}
-
-func (h HTTPHandler) Login(ctx *gin.Context) {
-	//Declaring Variables
-	var tokenString string
-	var verified *bool
-	request := domain.UserLogin{
-		Email:    ctx.PostForm("email"),
-		Password: ctx.PostForm("password"),
-	}
-	resp, err := h.UserService.Login(ctx, request.Email)
-	if err != nil {
-		h.AsDatabaseError(ctx)
-		return
-
-	}
-	if resp.Id == uuid.Nil {
-		h.AsDataNotFound(ctx)
-		return
-	}
-	if err := resp.CheckPassword(request.Password); err != nil {
-		h.AsPasswordUnmatched(ctx)
-		return
-	}
-	verified, err = h.UserService.CheckVerified(ctx, resp.Id)
-	if err != nil {
-		h.AsDatabaseError(ctx)
-		return
-
-	}
-	if !*verified {
-		h.AsNotVerfied(ctx)
-		return
-	}
-	checkJWT, err := h.UserService.CheckJWT(ctx, resp.Id)
-	if err != nil {
-		h.AsDatabaseError(ctx)
-		return
-	} else if checkJWT.Name == "" {
-		tokenString, err = jwthelper.GenerateJWT(*resp, *verified)
-		if err != nil {
-			h.AsInvalidTokenError(ctx)
-			return
-		}
-		if err := h.UserService.StoreJWT(ctx, tokenString, resp.Id); err != nil {
-			h.AsDataNotFound(ctx)
-			return
-		}
-	} else if checkJWT.Name != "" {
-		tokenString, err = jwthelper.GenerateJWT(*resp, *verified)
-		if err != nil {
-			h.AsInvalidTokenError(ctx)
-			return
-		}
-		JWTRead, err := jwthelper.TokenRead(checkJWT.Name)
-		if err != nil {
-			h.AsInvalidTokenError(ctx)
-			return
-		}
-		if JWTRead.LastLogin.Day() == time.Now().Day() {
-			h.AsJWTExist(ctx, checkJWT.Name)
-			return
-		} else {
-			if err := h.UserService.StoreJWT(ctx, tokenString, resp.Id); err != nil {
-				h.AsDataNotFound(ctx)
-				return
-			}
-			ctx.JSON(http.StatusOK, gin.H{
-				"token": tokenString,
-			})
-			return
-		}
-	}
-
-	ctx.JSON(http.StatusOK, gin.H{
-		"token": tokenString,
-	})
-}
-
 func (h HTTPHandler) CreateUser(ctx *gin.Context) {
 	body := domain.User{
-		Name:     ctx.PostForm("name"),
+		Username: ctx.PostForm("username"),
 		Email:    ctx.PostForm("email"),
 		Password: ctx.PostForm("password"),
 	}
@@ -450,10 +335,10 @@ func (h HTTPHandler) CreateUser(ctx *gin.Context) {
 		return
 	}
 
-	if emailCheck, err := h.UserService.Login(ctx, body.Email); err != nil {
+	if duplicateCheck, err := h.UserService.Login(ctx, body.Username, body.Email); err != nil {
 		h.AsDatabaseError(ctx)
 		return
-	} else if emailCheck.Email != "" {
+	} else if duplicateCheck.Email == body.Email && duplicateCheck.Username == body.Username {
 		h.AsDuplicateEmail(ctx)
 		return
 	}
@@ -483,6 +368,84 @@ func (h HTTPHandler) CreateUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"Message": "Account created, check your email for verification",
 		"Id":      body.Id.String(),
+	})
+}
+
+func (h HTTPHandler) Login(ctx *gin.Context) {
+	//Declaring Variables
+	var tokenString string
+	var verified *bool
+	request := domain.UserLogin{
+		Username: ctx.PostForm("username"),
+		Email:    ctx.PostForm("email"),
+		Password: ctx.PostForm("password"),
+	}
+	resp, err := h.UserService.Login(ctx, request.Username, request.Email)
+	if err != nil {
+		h.AsDatabaseError(ctx)
+		return
+
+	}
+	if resp.Id == uuid.Nil {
+		h.AsDataNotFound(ctx)
+		return
+	}
+	if err := resp.CheckPassword(request.Password); err != nil {
+		h.AsPasswordUnmatched(ctx)
+		return
+	}
+	verified, err = h.UserService.CheckVerified(ctx, resp.Id)
+	if err != nil {
+		h.AsDatabaseError(ctx)
+		return
+
+	}
+	if !*verified {
+		h.AsNotVerfied(ctx)
+		return
+	}
+	checkJWT, err := h.UserService.CheckJWT(ctx, resp.Id)
+	if err != nil {
+		h.AsDatabaseError(ctx)
+		return
+	} else if checkJWT.Jwt == "" {
+		tokenString, err = jwthelper.GenerateJWT(*resp, *verified)
+		if err != nil {
+			h.AsInvalidTokenError(ctx)
+			return
+		}
+		if err := h.UserService.StoreJWT(ctx, tokenString, resp.Id); err != nil {
+			h.AsDataNotFound(ctx)
+			return
+		}
+	} else if checkJWT.Jwt != "" {
+		tokenString, err = jwthelper.GenerateJWT(*resp, *verified)
+		if err != nil {
+			h.AsInvalidTokenError(ctx)
+			return
+		}
+		JWTRead, err := jwthelper.TokenRead(checkJWT.Jwt)
+		if err != nil {
+			h.AsInvalidTokenError(ctx)
+			return
+		}
+		if JWTRead.LastLogin.Day() == time.Now().Day() {
+			h.AsJWTExist(ctx)
+			return
+		} else {
+			if err := h.UserService.StoreJWT(ctx, tokenString, resp.Id); err != nil {
+				h.AsDataNotFound(ctx)
+				return
+			}
+			ctx.JSON(http.StatusOK, gin.H{
+				"token": tokenString,
+			})
+			return
+		}
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"token": tokenString,
 	})
 }
 

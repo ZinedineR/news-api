@@ -14,7 +14,7 @@ var jwtKey = []byte("supersecretkey")
 
 type JWTClaim struct {
 	Id        uuid.UUID `json:"id"`
-	Name      string    `json:"name"`
+	Username  string    `json:"username"`
 	Email     string    `json:"email"`
 	Password  string    `json:"password"`
 	LastLogin time.Time `json:"last_login"`
@@ -26,7 +26,7 @@ func GenerateJWT(data domain.User, verified bool) (tokenString string, err errs.
 	// expirationTime := time.Now().Add(1 * time.Hour)
 	claims := &JWTClaim{
 		Id:        data.Id,
-		Name:      data.Name,
+		Username:  data.Username,
 		Email:     data.Email,
 		Password:  data.Password,
 		LastLogin: time.Now(),

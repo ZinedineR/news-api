@@ -15,7 +15,7 @@ const (
 
 type User struct {
 	Id        uuid.UUID `gorm:"type:uuid;primary_key" json:"id"`
-	Name      string    `gorm:"type:varchar;not_null" json:"name"`
+	Username  string    `gorm:"type:varchar;not_null" json:"usernamename"`
 	Email     string    `gorm:"type:varchar;not_null" json:"email"`
 	Password  string    `gorm:"type:varchar;not_null" json:"password"`
 	CreatedAt time.Time `gorm:"type:date;not_null" json:"created_at"`
@@ -23,11 +23,12 @@ type User struct {
 
 type UserData struct {
 	Id        uuid.UUID `gorm:"type:uuid;primary_key" json:"id"`
-	Name      string    `gorm:"type:varchar;not_null" json:"name"`
+	Username  string    `gorm:"type:varchar;not_null" json:"username"`
 	CreatedAt time.Time `gorm:"type:date;not_null" json:"created_at"`
 }
 
 type UserLogin struct {
+	Username string `gorm:"type:varchar;not_null" json:"username"`
 	Email    string `gorm:"type:varchar;not_null" json:"email"`
 	Password string `gorm:"type:varchar;not_null" json:"password"`
 }
@@ -37,8 +38,8 @@ func (model *User) TableName() string {
 }
 
 func (model *User) CheckData() string {
-	if model.Name == "" {
-		return "Name can't be null"
+	if model.Username == "" {
+		return "Username can't be null"
 	}
 	if model.Email == "" {
 		return "Email can't be null"

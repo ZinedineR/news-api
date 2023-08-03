@@ -38,7 +38,7 @@ func Initmigrate(db *gorm.DB) {
 	logrus.Info(fmt.Println("  TableModel [" + (&userDomain.Verification{}).TableName() + "]"))
 	db.AutoMigrate(&newsDomain.Categories{})
 	logrus.Info(fmt.Println("  TableModel [" + (&newsDomain.Categories{}).TableName() + "]"))
-	db.Debug().AutoMigrate(&newsDomain.News{})
+	db.AutoMigrate(&newsDomain.News{})
 	logrus.Info(fmt.Println("  TableModel [" + (&newsDomain.News{}).TableName() + "]"))
 
 	// db.AutoMigrate(&entity.Users{})

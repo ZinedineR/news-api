@@ -20,8 +20,20 @@ type service struct {
 	authRepo repository.Repository
 }
 
-func (s service) Login(ctx context.Context, email string) (*domain.User, errs.Error) {
-	result, err := s.authRepo.GetUserFullData(ctx, email)
+func (s service) CreateUser(ctx context.Context, model *domain.User) errs.Error {
+	if model.Id == uuid.Nil {
+		model.Id = uuid.New()
+		model.CreatedAt = time.Now()
+	}
+
+	if err := s.authRepo.CreateUser(ctx, model); err != nil {
+		return errs.Wrap(err)
+	}
+	return nil
+}
+
+func (s service) Login(ctx context.Context, username, email string) (*domain.User, errs.Error) {
+	result, err := s.authRepo.GetUserFullData(ctx, username, email)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +47,7 @@ func (s service) StoreJWT(ctx context.Context, jwt string, Id uuid.UUID) errs.Er
 	return nil
 }
 
-func (s service) CheckJWT(ctx context.Context, Id uuid.UUID) (*domain.User, errs.Error) {
+func (s service) CheckJWT(ctx context.Context, Id uuid.UUID) (*domain.Verification, errs.Error) {
 	result, err := s.authRepo.CheckJWT(ctx, Id)
 	if err != nil {
 		return nil, err
@@ -49,18 +61,6 @@ func (s service) CheckVerified(ctx context.Context, Id uuid.UUID) (*bool, errs.E
 		return nil, err
 	}
 	return result, nil
-}
-
-func (s service) CreateUser(ctx context.Context, model *domain.User) errs.Error {
-	if model.Id == uuid.Nil {
-		model.Id = uuid.New()
-		model.CreatedAt = time.Now()
-	}
-
-	if err := s.authRepo.CreateUser(ctx, model); err != nil {
-		return errs.Wrap(err)
-	}
-	return nil
 }
 
 func (s service) CreateVerification(ctx context.Context, model *domain.Verification) errs.Error {

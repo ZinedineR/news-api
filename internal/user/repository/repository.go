@@ -17,6 +17,16 @@ type repo struct {
 	base *baseModel.PostgreSQLClientRepository
 }
 
+func (r repo) CreateUser(ctx context.Context, model *domain.User) errs.Error {
+	if err := r.db.WithContext(ctx).
+		Create(&model).
+		Error; err != nil {
+		return errs.Wrap(err)
+	}
+	return nil
+
+}
+
 func (r repo) CheckVerified(ctx context.Context, Id uuid.UUID) (*bool, errs.Error) {
 	var (
 		model *domain.Verification
@@ -35,7 +45,7 @@ func (r repo) CheckVerified(ctx context.Context, Id uuid.UUID) (*bool, errs.Erro
 
 }
 
-func (r repo) GetUserFullData(ctx context.Context, email string) (*domain.User, errs.Error) {
+func (r repo) GetUserFullData(ctx context.Context, username, email string) (*domain.User, errs.Error) {
 	var (
 		models *domain.User
 	)
@@ -55,7 +65,7 @@ func (r repo) GetUserFullData(ctx context.Context, email string) (*domain.User, 
 
 func (r repo) StoreJWT(ctx context.Context, jwt string, Id uuid.UUID) errs.Error {
 	if err := r.db.WithContext(ctx).
-		Model(&domain.User{}).
+		Model(&domain.Verification{}).
 		Where("user_id = ?", Id).
 		Update("jwt", jwt).Error; err != nil {
 		return errs.Wrap(err)
@@ -64,12 +74,12 @@ func (r repo) StoreJWT(ctx context.Context, jwt string, Id uuid.UUID) errs.Error
 
 }
 
-func (r repo) CheckJWT(ctx context.Context, Id uuid.UUID) (*domain.User, errs.Error) {
+func (r repo) CheckJWT(ctx context.Context, Id uuid.UUID) (*domain.Verification, errs.Error) {
 	var (
-		models *domain.User
+		models *domain.Verification
 	)
 	if err := r.db.WithContext(ctx).
-		Model(&domain.User{}).
+		Model(&domain.Verification{}).
 		Where("user_id = ?", Id).
 		First(&models).
 		Error; err != nil {
@@ -79,16 +89,6 @@ func (r repo) CheckJWT(ctx context.Context, Id uuid.UUID) (*domain.User, errs.Er
 		return nil, errs.Wrap(err)
 	}
 	return models, nil
-
-}
-
-func (r repo) CreateUser(ctx context.Context, model *domain.User) errs.Error {
-	if err := r.db.WithContext(ctx).
-		Create(&model).
-		Error; err != nil {
-		return errs.Wrap(err)
-	}
-	return nil
 
 }
 

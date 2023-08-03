@@ -13,7 +13,7 @@ func (h *HttpServe) setupRouter() {
 	v1.POST("/user", h.userHandler.CreateUser)
 	v1.GET("/verify/:id", h.userHandler.UpdateVerification)
 	// h.MoodleRoute("POST", "/user", h.userHandler.CreateUser)
-	h.MoodleRoute("GET", "/user", h.userHandler.GetUserData)
+	// h.MoodleRoute("GET", "/user", h.userHandler.GetUserData)
 	// h.MoodleRoute("GET", "/verify/:id", h.userHandler.UpdateVerification)
 }
 
