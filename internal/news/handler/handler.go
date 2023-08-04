@@ -427,3 +427,120 @@ func (h HTTPHandler) DeleteCategories(ctx *app.Context) *server.ResponseInterfac
 	}{respStatus, Id.String() + " has been deleted"}
 	return h.AsJsonInterface(ctx, http.StatusOK, finalResponse)
 }
+
+func (h HTTPHandler) CreateNews(ctx *app.Context) *server.ResponseInterface {
+	categoryForm := ctx.PostForm("categories_id")
+	category, err := uuid.Parse(categoryForm)
+	if err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Id param not valid")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+	body := domain.News{
+		CategoriesId: category,
+		Title:        ctx.PostForm("title"),
+		Description:  ctx.PostForm("description"),
+		Content:      ctx.PostForm("content"),
+	}
+	if err := h.NewsService.CreateNews(ctx, &body); err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Error in creating news")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+	respStatus := responsehelper.GetStatusResponse(http.StatusOK, "")
+
+	finalResponse := struct {
+		*BaseDomain.Status
+		*domain.News
+	}{respStatus, &body}
+	return h.AsJsonInterface(ctx, http.StatusOK, finalResponse)
+}
+
+func (h HTTPHandler) GetDetailNews(ctx *app.Context) *server.ResponseInterface {
+	idParam := ctx.Param("id")
+	Id, err := uuid.Parse(idParam)
+	if err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Id param not valid")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+	resp, err := h.NewsService.GetDetailNews(ctx, Id)
+	if err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Data not found/error getting data from database")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+	respStatus := responsehelper.GetStatusResponse(http.StatusOK, "")
+
+	finalResponse := struct {
+		*BaseDomain.Status
+		*domain.News
+	}{respStatus, resp}
+	return h.AsJsonInterface(ctx, http.StatusOK, finalResponse)
+}
+
+func (h HTTPHandler) ListNews(ctx *app.Context) *server.ResponseInterface {
+	resp, err := h.NewsService.GetNews(ctx)
+	if err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Data not found/error getting data from database")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+	respStatus := responsehelper.GetStatusResponse(http.StatusOK, "")
+
+	finalResponse := struct {
+		*BaseDomain.Status
+		List []domain.News `json:"list"`
+	}{respStatus, *resp}
+	return h.AsJsonInterface(ctx, http.StatusOK, finalResponse)
+}
+
+func (h HTTPHandler) UpdateNews(ctx *app.Context) *server.ResponseInterface {
+	idParam := ctx.Param("id")
+	Id, err := uuid.Parse(idParam)
+	if err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Id param not valid")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+	categoryForm := ctx.PostForm("categories_id")
+	category, err := uuid.Parse(categoryForm)
+	if err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Id param not valid")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+	body := domain.News{
+		Id:           Id,
+		CategoriesId: category,
+		Title:        ctx.PostForm("title"),
+		Description:  ctx.PostForm("description"),
+		Content:      ctx.PostForm("content"),
+	}
+	if err := h.NewsService.UpdateNews(ctx, &body); err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Error in updating news")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+	respStatus := responsehelper.GetStatusResponse(http.StatusOK, "")
+
+	finalResponse := struct {
+		*BaseDomain.Status
+		*domain.News
+	}{respStatus, &body}
+	return h.AsJsonInterface(ctx, http.StatusOK, finalResponse)
+}
+
+func (h HTTPHandler) DeleteNews(ctx *app.Context) *server.ResponseInterface {
+	idParam := ctx.Param("id")
+	Id, err := uuid.Parse(idParam)
+	if err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Id param not valid")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+
+	if err := h.NewsService.DeleteNews(ctx, Id); err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Error in deleting news")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+
+	respStatus := responsehelper.GetStatusResponse(http.StatusOK, "")
+
+	finalResponse := struct {
+		*BaseDomain.Status
+		AdditionalInfo string `json:"additional_info"`
+	}{respStatus, Id.String() + " has been deleted"}
+	return h.AsJsonInterface(ctx, http.StatusOK, finalResponse)
+}

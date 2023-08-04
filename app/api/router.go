@@ -13,13 +13,19 @@ func (h *HttpServe) setupRouter() {
 	v1.POST("/user", h.userHandler.CreateUser)
 	v1.GET("/verify/:id", h.userHandler.UpdateVerification)
 
+	//Categories
 	h.UserRoute("POST", "/categories", h.newsHandler.CreateCategories)
 	h.UserRoute("GET", "/categories", h.newsHandler.ListCategories)
 	h.UserRoute("GET", "/categories/:id", h.newsHandler.GetDetailCategories)
 	h.UserRoute("PUT", "/categories/:id", h.newsHandler.UpdateCategories)
 	h.UserRoute("DELETE", "/categories/:id", h.newsHandler.DeleteCategories)
-	// h.UserRoute("GET", "/user", h.userHandler.GetUserData)
-	// h.UserRoute("GET", "/verify/:id", h.userHandler.UpdateVerification)
+
+	//News
+	h.UserRoute("POST", "/news", h.newsHandler.CreateNews)
+	h.GuestRoute("GET", "/news", h.newsHandler.ListNews)
+	h.GuestRoute("GET", "/news/:id", h.newsHandler.GetDetailNews)
+	h.UserRoute("PUT", "/news/:id", h.newsHandler.UpdateNews)
+	h.UserRoute("DELETE", "/news/:id", h.newsHandler.DeleteNews)
 }
 
 func (h *HttpServe) UserRoute(method, path string, f handler.HandlerFnInterface) {

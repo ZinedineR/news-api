@@ -15,4 +15,9 @@ type Repository interface {
 	UpdateCategories(ctx context.Context, model *domain.Categories) errs.Error
 	DeleteCategories(ctx context.Context, Id uuid.UUID) errs.Error
 	SearchCategories(ctx context.Context, title string) (*domain.Categories, errs.Error)
+	CreateNews(ctx context.Context, model *domain.News) errs.Error
+	GetDetailNews(ctx context.Context, Id uuid.UUID) (*domain.News, errs.Error)
+	GetNews(ctx context.Context) (*[]domain.News, errs.Error)
+	UpdateNews(ctx context.Context, model *domain.News) errs.Error
+	DeleteNews(ctx context.Context, Id uuid.UUID) errs.Error
 }

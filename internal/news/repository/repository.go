@@ -100,3 +100,67 @@ func (r repo) SearchCategories(ctx context.Context, title string) (*domain.Categ
 	}
 	return models, nil
 }
+
+func (r repo) CreateNews(ctx context.Context, model *domain.News) errs.Error {
+	if err := r.db.WithContext(ctx).
+		Create(&model).
+		Error; err != nil {
+		return errs.Wrap(err)
+	}
+	return nil
+}
+
+func (r repo) GetDetailNews(ctx context.Context, Id uuid.UUID) (*domain.News, errs.Error) {
+	var (
+		models *domain.News
+	)
+	if err := r.db.WithContext(ctx).
+		Model(&domain.News{}).
+		First(&models, Id).
+		Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return models, nil
+		}
+		return nil, errs.Wrap(err)
+	}
+	return models, nil
+}
+
+func (r repo) GetNews(ctx context.Context) (*[]domain.News, errs.Error) {
+	var (
+		models *[]domain.News
+	)
+	if err := r.db.WithContext(ctx).
+		Model(&domain.News{}).
+		Where("deleted", false).
+		Find(&models).
+		Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return models, nil
+		}
+		return nil, errs.Wrap(err)
+	}
+	return models, nil
+
+}
+
+func (r repo) UpdateNews(ctx context.Context, model *domain.News) errs.Error {
+	if err := r.db.WithContext(ctx).
+		Model(&domain.News{Id: model.Id}).
+		Select("categories_id, title, description, content, updated_at").
+		Updates(model).
+		Error; err != nil {
+		return errs.Wrap(err)
+	}
+	return nil
+}
+
+func (r repo) DeleteNews(ctx context.Context, Id uuid.UUID) errs.Error {
+	if err := r.db.WithContext(ctx).
+		Model(&domain.News{Id: Id}).
+		Update("deleted", true).
+		Error; err != nil {
+		return errs.Wrap(err)
+	}
+	return nil
+}

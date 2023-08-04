@@ -15,10 +15,10 @@ type News struct {
 	CategoriesId uuid.UUID   `gorm:"type:uuid;not_null" json:"categories_id"`
 	Title        string      `gorm:"type:varchar" json:"title"`
 	Description  string      `gorm:"type:varchar" json:"description"`
-	Created_at   time.Time   `gorm:"type:date;not_null" json:"created_at"`
-	Updated_at   time.Time   `gorm:"type:date;not_null" json:"updated_at"`
+	Content      string      `gorm:"type:varchar" json:"content"`
+	CreatedAt    time.Time   `gorm:"type:date;not_null" json:"created_at"`
+	UpdatedAt    time.Time   `gorm:"type:date;not_null" json:"updated_at"`
 	Deleted      bool        `gorm:"default:false;not_null" json:"deleted"`
-	Clicks       int         `gorm:"type:int" json:"clicks"`
 	Categories   *Categories `gorm:"foreignKey:CategoriesId"`
 }
 
