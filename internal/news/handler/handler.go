@@ -544,3 +544,108 @@ func (h HTTPHandler) DeleteNews(ctx *app.Context) *server.ResponseInterface {
 	}{respStatus, Id.String() + " has been deleted"}
 	return h.AsJsonInterface(ctx, http.StatusOK, finalResponse)
 }
+
+func (h HTTPHandler) CreateCustom(ctx *app.Context) *server.ResponseInterface {
+	body := domain.Custom{
+		CustomUrl:   ctx.PostForm("custom_url"),
+		Title:       ctx.PostForm("title"),
+		Description: ctx.PostForm("description"),
+		Content:     ctx.PostForm("content"),
+	}
+	if err := h.NewsService.CreateCustom(ctx, &body); err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Error in creating custom page")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+	respStatus := responsehelper.GetStatusResponse(http.StatusOK, "")
+
+	finalResponse := struct {
+		*BaseDomain.Status
+		*domain.Custom
+	}{respStatus, &body}
+	return h.AsJsonInterface(ctx, http.StatusOK, finalResponse)
+}
+
+func (h HTTPHandler) GetDetailCustom(ctx *app.Context) *server.ResponseInterface {
+	idParam := ctx.Param("id")
+	Id, err := uuid.Parse(idParam)
+	if err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Id param not valid")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+	resp, err := h.NewsService.GetDetailCustom(ctx, Id)
+	if err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Data not found/error getting data from database")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+	respStatus := responsehelper.GetStatusResponse(http.StatusOK, "")
+
+	finalResponse := struct {
+		*BaseDomain.Status
+		*domain.Custom
+	}{respStatus, resp}
+	return h.AsJsonInterface(ctx, http.StatusOK, finalResponse)
+}
+
+func (h HTTPHandler) ListCustom(ctx *app.Context) *server.ResponseInterface {
+	resp, err := h.NewsService.GetCustom(ctx)
+	if err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Data not found/error getting data from database")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+	respStatus := responsehelper.GetStatusResponse(http.StatusOK, "")
+
+	finalResponse := struct {
+		*BaseDomain.Status
+		List []domain.Custom `json:"list"`
+	}{respStatus, *resp}
+	return h.AsJsonInterface(ctx, http.StatusOK, finalResponse)
+}
+
+func (h HTTPHandler) UpdateCustom(ctx *app.Context) *server.ResponseInterface {
+	idParam := ctx.Param("id")
+	Id, err := uuid.Parse(idParam)
+	if err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Id param not valid")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+	body := domain.Custom{
+		Id:          Id,
+		CustomUrl:   ctx.PostForm("custom_url"),
+		Title:       ctx.PostForm("title"),
+		Description: ctx.PostForm("description"),
+		Content:     ctx.PostForm("content"),
+	}
+	if err := h.NewsService.UpdateCustom(ctx, &body); err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Error in updating custom page")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+	respStatus := responsehelper.GetStatusResponse(http.StatusOK, "")
+
+	finalResponse := struct {
+		*BaseDomain.Status
+		*domain.Custom
+	}{respStatus, &body}
+	return h.AsJsonInterface(ctx, http.StatusOK, finalResponse)
+}
+
+func (h HTTPHandler) DeleteCustom(ctx *app.Context) *server.ResponseInterface {
+	idParam := ctx.Param("id")
+	Id, err := uuid.Parse(idParam)
+	if err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Id param not valid")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+
+	if err := h.NewsService.DeleteCustom(ctx, Id); err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Error in deleting custom page")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+
+	respStatus := responsehelper.GetStatusResponse(http.StatusOK, "")
+
+	finalResponse := struct {
+		*BaseDomain.Status
+		AdditionalInfo string `json:"additional_info"`
+	}{respStatus, Id.String() + " has been deleted"}
+	return h.AsJsonInterface(ctx, http.StatusOK, finalResponse)
+}

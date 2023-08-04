@@ -26,6 +26,13 @@ func (h *HttpServe) setupRouter() {
 	h.GuestRoute("GET", "/news/:id", h.newsHandler.GetDetailNews)
 	h.UserRoute("PUT", "/news/:id", h.newsHandler.UpdateNews)
 	h.UserRoute("DELETE", "/news/:id", h.newsHandler.DeleteNews)
+
+	//Custom
+	h.UserRoute("POST", "/custom", h.newsHandler.CreateCustom)
+	h.GuestRoute("GET", "/custom", h.newsHandler.ListCustom)
+	h.GuestRoute("GET", "/custom/:id", h.newsHandler.GetDetailCustom)
+	h.UserRoute("PUT", "/custom/:id", h.newsHandler.UpdateCustom)
+	h.UserRoute("DELETE", "/custom/:id", h.newsHandler.DeleteCustom)
 }
 
 func (h *HttpServe) UserRoute(method, path string, f handler.HandlerFnInterface) {

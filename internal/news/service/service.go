@@ -112,3 +112,47 @@ func (s service) DeleteNews(ctx context.Context, Id uuid.UUID) errs.Error {
 	}
 	return nil
 }
+
+func (s service) CreateCustom(ctx context.Context, model *domain.Custom) errs.Error {
+	if model.Id == uuid.Nil {
+		model.Id = uuid.New()
+		model.CreatedAt = time.Now()
+		model.UpdatedAt = time.Now()
+	}
+
+	if err := s.newsRepo.CreateCustom(ctx, model); err != nil {
+		return errs.Wrap(err)
+	}
+	return nil
+}
+
+func (s service) GetDetailCustom(ctx context.Context, Id uuid.UUID) (*domain.Custom, errs.Error) {
+	result, err := s.newsRepo.GetDetailCustom(ctx, Id)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (s service) GetCustom(ctx context.Context) (*[]domain.Custom, errs.Error) {
+	result, err := s.newsRepo.GetCustom(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (s service) UpdateCustom(ctx context.Context, model *domain.Custom) errs.Error {
+	model.UpdatedAt = time.Now()
+	if err := s.newsRepo.UpdateCustom(ctx, model); err != nil {
+		return errs.Wrap(err)
+	}
+	return nil
+}
+
+func (s service) DeleteCustom(ctx context.Context, Id uuid.UUID) errs.Error {
+	if err := s.newsRepo.DeleteCustom(ctx, Id); err != nil {
+		return errs.Wrap(err)
+	}
+	return nil
+}

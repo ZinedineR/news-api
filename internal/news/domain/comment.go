@@ -1,32 +1,27 @@
 package domain
 
 import (
-	"time"
-
 	"github.com/google/uuid"
 )
 
 const (
-	NewsTableName = "news"
+	CommentTableName = "comment"
 )
 
-type News struct {
-	Id           uuid.UUID   `gorm:"type:uuid;primary_key;not_null" json:"id"`
-	CategoriesId uuid.UUID   `gorm:"type:uuid;not_null" json:"categories_id"`
-	Title        string      `gorm:"type:varchar" json:"title"`
-	Description  string      `gorm:"type:varchar" json:"description"`
-	Content      string      `gorm:"type:varchar" json:"content"`
-	CreatedAt    time.Time   `gorm:"type:timestamp;not_null" json:"created_at"`
-	UpdatedAt    time.Time   `gorm:"type:timestamp;not_null" json:"updated_at"`
-	Deleted      bool        `gorm:"default:false;not_null" json:"deleted"`
-	Categories   *Categories `gorm:"foreignKey:CategoriesId"`
+type Comment struct {
+	Id      uuid.UUID `gorm:"type:uuid;primary_key;not_null" json:"id"`
+	PageId  uuid.UUID `gorm:"type:uuid;not_null" json:"page_id"`
+	Name    string    `gorm:"type:varchar" json:"name"`
+	Comment string    `gorm:"type:varchar" json:"comment"`
+	News    *News     `gorm:"foreignKey:PageId"`
+	Custom  *Custom   `gorm:"foreignKey:PageId"`
 }
 
-func (model *News) TableName() string {
-	return NewsTableName
+func (model *Comment) TableName() string {
+	return CommentTableName
 }
 
-// func (model *News) CheckData() string {
+// func (model *Comment) CheckData() string {
 // 	if model.Name == "" {
 // 		return "Name can't be null"
 // 	}
@@ -62,7 +57,7 @@ func (model *News) TableName() string {
 // 	return ""
 // }
 
-// func (model *News) HashPassword(password string) error {
+// func (model *Comment) HashPassword(password string) error {
 // 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 // 	if err != nil {
 // 		return err
@@ -70,7 +65,7 @@ func (model *News) TableName() string {
 // 	model.Password = string(bytes)
 // 	return nil
 // }
-// func (model *News) CheckPassword(providedPassword string) errs.Error {
+// func (model *Comment) CheckPassword(providedPassword string) errs.Error {
 // 	err := bcrypt.CompareHashAndPassword([]byte(model.Password), []byte(providedPassword))
 // 	if err != nil {
 // 		return errs.Wrap(err)

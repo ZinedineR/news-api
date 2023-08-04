@@ -20,4 +20,9 @@ type Repository interface {
 	GetNews(ctx context.Context) (*[]domain.News, errs.Error)
 	UpdateNews(ctx context.Context, model *domain.News) errs.Error
 	DeleteNews(ctx context.Context, Id uuid.UUID) errs.Error
+	CreateCustom(ctx context.Context, model *domain.Custom) errs.Error
+	GetDetailCustom(ctx context.Context, Id uuid.UUID) (*domain.Custom, errs.Error)
+	GetCustom(ctx context.Context) (*[]domain.Custom, errs.Error)
+	UpdateCustom(ctx context.Context, model *domain.Custom) errs.Error
+	DeleteCustom(ctx context.Context, Id uuid.UUID) errs.Error
 }
