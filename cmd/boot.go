@@ -11,6 +11,10 @@ import (
 
 	appConfiguration "news-api/app/appconf"
 	"news-api/internal/base/handler"
+
+	nwsHandler "news-api/internal/news/handler"
+	newsRepo "news-api/internal/news/repository"
+	newsService "news-api/internal/news/service"
 	usrHandler "news-api/internal/user/handler"
 	userRepo "news-api/internal/user/repository"
 	userService "news-api/internal/user/service"
@@ -25,6 +29,7 @@ var (
 	appConf            *appConfiguration.Config
 	baseHandler        *handler.BaseHTTPHandler
 	userHandler        *usrHandler.HTTPHandler
+	newsHandler        *nwsHandler.HTTPHandler
 	postgresClientRepo *db.PostgreSQLClientRepository
 )
 
@@ -63,6 +68,9 @@ func initHTTP() {
 	userRepo := userRepo.NewRepository(postgresClientRepo.DB, postgresClientRepo)
 	userService := userService.NewService(userRepo)
 	userHandler = usrHandler.NewHTTPHandler(baseHandler, userService)
+	newsRepo := newsRepo.NewRepository(postgresClientRepo.DB, postgresClientRepo)
+	newsService := newsService.NewService(newsRepo)
+	newsHandler = nwsHandler.NewHTTPHandler(baseHandler, newsService)
 }
 
 func initInfrastructure() {

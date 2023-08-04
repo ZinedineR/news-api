@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"news-api/internal/base/handler"
+	nwsHandler "news-api/internal/news/handler"
 	usrHandler "news-api/internal/user/handler"
 	"news-api/pkg/server"
 
@@ -17,6 +18,7 @@ type HttpServe struct {
 	router      *gin.Engine
 	base        *handler.BaseHTTPHandler
 	userHandler *usrHandler.HTTPHandler
+	newsHandler *nwsHandler.HTTPHandler
 }
 
 func (h *HttpServe) Run() error {
@@ -30,7 +32,7 @@ func (h *HttpServe) Run() error {
 	return h.router.Run(fmt.Sprintf(":%s", os.Getenv("HTTP_SERVER_PORT")))
 }
 
-func New(appName string, base *handler.BaseHTTPHandler, user *usrHandler.HTTPHandler) server.App {
+func New(appName string, base *handler.BaseHTTPHandler, user *usrHandler.HTTPHandler, news *nwsHandler.HTTPHandler) server.App {
 
 	if os.Getenv("APP_ENV") != "production" {
 		if os.Getenv("DEV_SHOW_ROUTE") == "False" {
@@ -65,5 +67,6 @@ func New(appName string, base *handler.BaseHTTPHandler, user *usrHandler.HTTPHan
 		router:      r,
 		base:        base,
 		userHandler: user,
+		newsHandler: news,
 	}
 }

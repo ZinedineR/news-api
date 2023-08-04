@@ -13,11 +13,11 @@ import (
 
 // NewService creates new user service
 func NewService(repo repository.Repository) Service {
-	return &service{authRepo: repo}
+	return &service{profileRepo: repo}
 }
 
 type service struct {
-	authRepo repository.Repository
+	profileRepo repository.Repository
 }
 
 func (s service) CreateUser(ctx context.Context, model *domain.User) errs.Error {
@@ -26,14 +26,14 @@ func (s service) CreateUser(ctx context.Context, model *domain.User) errs.Error 
 		model.CreatedAt = time.Now()
 	}
 
-	if err := s.authRepo.CreateUser(ctx, model); err != nil {
+	if err := s.profileRepo.CreateUser(ctx, model); err != nil {
 		return errs.Wrap(err)
 	}
 	return nil
 }
 
 func (s service) Login(ctx context.Context, username, email string) (*domain.User, errs.Error) {
-	result, err := s.authRepo.GetUserFullData(ctx, username, email)
+	result, err := s.profileRepo.GetUserFullData(ctx, username, email)
 	if err != nil {
 		return nil, err
 	}
@@ -41,14 +41,14 @@ func (s service) Login(ctx context.Context, username, email string) (*domain.Use
 }
 
 func (s service) StoreJWT(ctx context.Context, jwt string, Id uuid.UUID) errs.Error {
-	if err := s.authRepo.StoreJWT(ctx, jwt, Id); err != nil {
+	if err := s.profileRepo.StoreJWT(ctx, jwt, Id); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (s service) CheckJWT(ctx context.Context, Id uuid.UUID) (*domain.Verification, errs.Error) {
-	result, err := s.authRepo.CheckJWT(ctx, Id)
+	result, err := s.profileRepo.CheckJWT(ctx, Id)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func (s service) CheckJWT(ctx context.Context, Id uuid.UUID) (*domain.Verificati
 }
 
 func (s service) CheckVerified(ctx context.Context, Id uuid.UUID) (*bool, errs.Error) {
-	result, err := s.authRepo.CheckVerified(ctx, Id)
+	result, err := s.profileRepo.CheckVerified(ctx, Id)
 	if err != nil {
 		return nil, err
 	}
@@ -69,14 +69,14 @@ func (s service) CreateVerification(ctx context.Context, model *domain.Verificat
 		model.Expiresat = time.Now().Add(time.Hour * 24)
 	}
 
-	if err := s.authRepo.CreateVerification(ctx, model); err != nil {
+	if err := s.profileRepo.CreateVerification(ctx, model); err != nil {
 		return errs.Wrap(err)
 	}
 	return nil
 }
 
 func (s service) UpdateVerification(ctx context.Context, Id uuid.UUID) errs.Error {
-	if err := s.authRepo.UpdateVerification(ctx, Id); err != nil {
+	if err := s.profileRepo.UpdateVerification(ctx, Id); err != nil {
 		return errs.Wrap(err)
 	}
 	return nil

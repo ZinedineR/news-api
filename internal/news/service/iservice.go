@@ -1,4 +1,18 @@
 package service
 
+import (
+	"context"
+	"news-api/internal/news/domain"
+	"news-api/pkg/errs"
+
+	"github.com/google/uuid"
+)
+
 type Service interface {
+	CreateCategories(ctx context.Context, model *domain.Categories) errs.Error
+	GetDetailCategories(ctx context.Context, Id uuid.UUID) (*domain.Categories, errs.Error)
+	GetCategories(ctx context.Context) (*[]domain.Categories, errs.Error)
+	UpdateCategories(ctx context.Context, model *domain.Categories) errs.Error
+	DeleteCategories(ctx context.Context, Id uuid.UUID) errs.Error
+	SearchCategories(ctx context.Context, title string) (*domain.Categories, errs.Error)
 }

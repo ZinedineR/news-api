@@ -52,7 +52,7 @@ func (model *User) CheckData() string {
 	uppercase := regexp.MustCompile(`[A-Z]`)
 	lowercase := regexp.MustCompile(`[a-z]`)
 	number := regexp.MustCompile(`[0-9]`)
-	symbol := regexp.MustCompile(`[!@#$%^&*]`)
+	symbol := regexp.MustCompile(`[^a-zA-Z0-9\s]`)
 
 	if !uppercase.MatchString(model.Password) {
 		return "Password must contain at least one uppercase letter"

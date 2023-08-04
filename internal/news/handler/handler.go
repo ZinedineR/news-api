@@ -3,24 +3,27 @@ package handler
 import (
 	"net/http"
 
-	UserService "news-api/internal/user/service"
-
 	"news-api/internal/base/app"
+	BaseDomain "news-api/internal/base/domain"
 	"news-api/internal/base/handler"
+	"news-api/internal/news/domain"
+	NewsService "news-api/internal/news/service"
+	"news-api/pkg/responsehelper"
 	"news-api/pkg/server"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type HTTPHandler struct {
 	App         *handler.BaseHTTPHandler
-	UserService UserService.Service
+	NewsService NewsService.Service
 }
 
-func NewHTTPHandler(handler *handler.BaseHTTPHandler, UserService UserService.Service) *HTTPHandler {
+func NewHTTPHandler(handler *handler.BaseHTTPHandler, NewsService NewsService.Service) *HTTPHandler {
 	return &HTTPHandler{
 		App:         handler,
-		UserService: UserService,
+		NewsService: NewsService,
 	}
 }
 
@@ -315,4 +318,112 @@ func (h HTTPHandler) AsError(ctx *app.Context, message string) *server.Response 
 
 func (h HTTPHandler) ThrowBadRequestException(ctx *app.Context, message string) *server.Response {
 	return h.App.ThrowExceptionJson(ctx, http.StatusBadRequest, 0, "Bad Request", message)
+}
+
+func (h HTTPHandler) CreateCategories(ctx *app.Context) *server.ResponseInterface {
+	body := domain.Categories{
+		Title: ctx.PostForm("title"),
+	}
+	if err := h.NewsService.CreateCategories(ctx, &body); err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Error in creating categories")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+	respStatus := responsehelper.GetStatusResponse(http.StatusOK, "")
+
+	finalResponse := struct {
+		*BaseDomain.Status
+		*domain.Categories
+	}{respStatus, &body}
+	return h.AsJsonInterface(ctx, http.StatusOK, finalResponse)
+}
+
+func (h HTTPHandler) GetDetailCategories(ctx *app.Context) *server.ResponseInterface {
+	idParam := ctx.Param("id")
+	Id, err := uuid.Parse(idParam)
+	if err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Id param not valid")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+	resp, err := h.NewsService.GetDetailCategories(ctx, Id)
+	if err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Data not found/error getting data from database")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+	respStatus := responsehelper.GetStatusResponse(http.StatusOK, "")
+
+	finalResponse := struct {
+		*BaseDomain.Status
+		*domain.Categories
+	}{respStatus, resp}
+	return h.AsJsonInterface(ctx, http.StatusOK, finalResponse)
+}
+
+func (h HTTPHandler) ListCategories(ctx *app.Context) *server.ResponseInterface {
+	resp, err := h.NewsService.GetCategories(ctx)
+	if err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Data not found/error getting data from database")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+	respStatus := responsehelper.GetStatusResponse(http.StatusOK, "")
+
+	finalResponse := struct {
+		*BaseDomain.Status
+		List []domain.Categories `json:"list"`
+	}{respStatus, *resp}
+	return h.AsJsonInterface(ctx, http.StatusOK, finalResponse)
+}
+
+func (h HTTPHandler) UpdateCategories(ctx *app.Context) *server.ResponseInterface {
+	idParam := ctx.Param("id")
+	Id, err := uuid.Parse(idParam)
+	if err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Id param not valid")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+	body := domain.Categories{
+		Id:    Id,
+		Title: ctx.PostForm("title"),
+	}
+	resp, err := h.NewsService.SearchCategories(ctx, body.Title)
+	if err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Data not found/error getting data from database")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+	if resp.Title == body.Title {
+		respStatus := responsehelper.GetStatusResponse(http.StatusUnauthorized, `Category '`+body.Title+`' already in database`)
+		return h.AsJsonInterface(ctx, http.StatusUnauthorized, respStatus)
+	}
+	if err := h.NewsService.UpdateCategories(ctx, &body); err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Error in creating categories")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+	respStatus := responsehelper.GetStatusResponse(http.StatusOK, "")
+
+	finalResponse := struct {
+		*BaseDomain.Status
+		*domain.Categories
+	}{respStatus, &body}
+	return h.AsJsonInterface(ctx, http.StatusOK, finalResponse)
+}
+
+func (h HTTPHandler) DeleteCategories(ctx *app.Context) *server.ResponseInterface {
+	idParam := ctx.Param("id")
+	Id, err := uuid.Parse(idParam)
+	if err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Id param not valid")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+
+	if err := h.NewsService.DeleteCategories(ctx, Id); err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Error in deleting categories")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+
+	respStatus := responsehelper.GetStatusResponse(http.StatusOK, "")
+
+	finalResponse := struct {
+		*BaseDomain.Status
+		AdditionalInfo string `json:"additional_info"`
+	}{respStatus, Id.String() + " has been deleted"}
+	return h.AsJsonInterface(ctx, http.StatusOK, finalResponse)
 }

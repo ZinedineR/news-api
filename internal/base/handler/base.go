@@ -67,14 +67,14 @@ func (b BaseHTTPHandler) ThrowExceptionJson(ctx *app.Context, status, code int, 
 	}
 }
 
-func (b BaseHTTPHandler) MoodleAuthentication(c *gin.Context) (*app.Context, error) {
+func (b BaseHTTPHandler) UserAuthentication(c *gin.Context) (*app.Context, error) {
 	return app.NewContext(c, b.AppConfig), nil
 }
 
-func (b BaseHTTPHandler) MoodleRunAction(handler HandlerFnInterface) gin.HandlerFunc {
+func (b BaseHTTPHandler) UserRunAction(handler HandlerFnInterface) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
-		ctx, err := b.MoodleAuthentication(c)
+		ctx, err := b.UserAuthentication(c)
 		if err != nil {
 			logrus.Errorln(fmt.Sprintf("REQUEST ID: %s , message: Unauthorized", ctx.APIReqID))
 			c.JSON(http.StatusUnauthorized, gin.H{
@@ -103,6 +103,49 @@ func (b BaseHTTPHandler) MoodleRunAction(handler HandlerFnInterface) gin.Handler
 			})
 			return
 		}
+		defer func() {
+			if err0 := recover(); err0 != nil {
+				logrus.Errorln(err0)
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"status":  http.StatusInternalServerError,
+					"message": "Request is halted unexpectedly, please contact the administrator.",
+					"data":    nil,
+				})
+			}
+		}()
+
+		resp := handler(ctx)
+		httpStatus := resp.Status
+
+		if resp.Data == nil {
+			c.Status(httpStatus)
+			return
+		}
+		end := time.Now().Sub(start)
+		logrus.Infoln(fmt.Sprintf("REQUEST ID: %s , LATENCY: %vms", ctx.APIReqID, end.Milliseconds()))
+		c.JSON(httpStatus, resp.Data)
+
+	}
+}
+
+func (b BaseHTTPHandler) GuestAuthentication(c *gin.Context) (*app.Context, error) {
+	return app.NewContext(c, b.AppConfig), nil
+}
+
+func (b BaseHTTPHandler) GuestRunAction(handler HandlerFnInterface) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		start := time.Now()
+		ctx, err := b.GuestAuthentication(c)
+		if err != nil {
+			logrus.Errorln(fmt.Sprintf("REQUEST ID: %s , message: Unauthorized", ctx.APIReqID))
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"status":  http.StatusUnauthorized,
+				"message": "Unauthorized",
+				"data":    err.Error(),
+			})
+			return
+		}
+
 		defer func() {
 			if err0 := recover(); err0 != nil {
 				logrus.Errorln(err0)
