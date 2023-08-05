@@ -22,15 +22,27 @@ type News struct {
 	Categories   *Categories `gorm:"foreignKey:CategoriesId"`
 }
 
+type NewsDetail struct {
+	Id           uuid.UUID  `gorm:"type:uuid;primary_key;not_null" json:"id"`
+	CategoriesId uuid.UUID  `gorm:"type:uuid;not_null" json:"categories_id"`
+	Title        string     `gorm:"type:varchar" json:"title"`
+	Description  string     `gorm:"type:varchar" json:"description"`
+	Content      string     `gorm:"type:varchar" json:"content"`
+	CreatedAt    time.Time  `gorm:"type:timestamp;not_null" json:"created_at"`
+	UpdatedAt    time.Time  `gorm:"type:timestamp;not_null" json:"updated_at"`
+	Deleted      bool       `gorm:"default:false;not_null" json:"deleted"`
+	Comment      []*Comment `gorm:"foreignKey:PageId" json:"comment"`
+}
+
 func (model *News) CheckData() string {
 	if model.Title == "" {
-		return "title can't be nill"
+		return "title can't be null"
 	}
 	if model.Description == "" {
-		return "description can't be nill"
+		return "description can't be null"
 	}
 	if model.Content == "" {
-		return "content url can't be nill"
+		return "content can't be null"
 	}
 	return ""
 }

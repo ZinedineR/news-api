@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -9,12 +11,19 @@ const (
 )
 
 type Comment struct {
-	Id      uuid.UUID `gorm:"type:uuid;primary_key;not_null" json:"id"`
-	PageId  uuid.UUID `gorm:"type:uuid;not_null" json:"page_id"`
-	Name    string    `gorm:"type:varchar" json:"name"`
-	Comment string    `gorm:"type:varchar" json:"comment"`
-	News    *News     `gorm:"foreignKey:PageId"`
-	Custom  *Custom   `gorm:"foreignKey:PageId"`
+	Id        uuid.UUID `gorm:"type:uuid;primary_key;not_null" json:"id"`
+	PageId    uuid.UUID `gorm:"type:uuid;not_null" json:"page_id"`
+	Name      string    `gorm:"type:varchar" json:"name"`
+	Comment   string    `gorm:"type:varchar" json:"comment"`
+	CreatedAt time.Time `gorm:"type:timestamp;not_null" json:"created_at"`
+	News      *News     `gorm:"foreignKey:PageId"`
+}
+
+func (model *Comment) CheckData() string {
+	if model.Comment == "" {
+		return "comment can't be null"
+	}
+	return ""
 }
 
 func (model *Comment) TableName() string {

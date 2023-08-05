@@ -324,6 +324,10 @@ func (h HTTPHandler) CreateCategories(ctx *app.Context) *server.ResponseInterfac
 	body := domain.Categories{
 		Title: ctx.PostForm("title"),
 	}
+	if bodyCheck := body.CheckData(); bodyCheck != "" {
+		respStatus := responsehelper.GetStatusResponse(http.StatusUnauthorized, bodyCheck)
+		return h.AsJsonInterface(ctx, http.StatusUnauthorized, respStatus)
+	}
 	if err := h.NewsService.CreateCategories(ctx, &body); err != nil {
 		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Error in creating categories")
 		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
@@ -474,7 +478,7 @@ func (h HTTPHandler) GetDetailNews(ctx *app.Context) *server.ResponseInterface {
 
 	finalResponse := struct {
 		*BaseDomain.Status
-		*domain.News
+		*domain.NewsDetail
 	}{respStatus, resp}
 	return h.AsJsonInterface(ctx, http.StatusOK, finalResponse)
 }
@@ -663,5 +667,34 @@ func (h HTTPHandler) DeleteCustom(ctx *app.Context) *server.ResponseInterface {
 		*BaseDomain.Status
 		AdditionalInfo string `json:"additional_info"`
 	}{respStatus, Id.String() + " has been deleted"}
+	return h.AsJsonInterface(ctx, http.StatusOK, finalResponse)
+}
+
+func (h HTTPHandler) CreateComment(ctx *app.Context) *server.ResponseInterface {
+	idParam := ctx.Param("id")
+	Id, err := uuid.Parse(idParam)
+	if err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Id param not valid")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+	body := domain.Comment{
+		PageId:  Id,
+		Name:    ctx.PostForm("name"),
+		Comment: ctx.PostForm("comment"),
+	}
+	if bodyCheck := body.CheckData(); bodyCheck != "" {
+		respStatus := responsehelper.GetStatusResponse(http.StatusUnauthorized, bodyCheck)
+		return h.AsJsonInterface(ctx, http.StatusUnauthorized, respStatus)
+	}
+	if err := h.NewsService.CreateComment(ctx, &body); err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Error in creating custom page")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
+	respStatus := responsehelper.GetStatusResponse(http.StatusOK, "")
+
+	finalResponse := struct {
+		*BaseDomain.Status
+		*domain.Comment
+	}{respStatus, &body}
 	return h.AsJsonInterface(ctx, http.StatusOK, finalResponse)
 }

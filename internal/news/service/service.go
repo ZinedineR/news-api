@@ -82,7 +82,7 @@ func (s service) CreateNews(ctx context.Context, model *domain.News) errs.Error 
 	return nil
 }
 
-func (s service) GetDetailNews(ctx context.Context, Id uuid.UUID) (*domain.News, errs.Error) {
+func (s service) GetDetailNews(ctx context.Context, Id uuid.UUID) (*domain.NewsDetail, errs.Error) {
 	result, err := s.newsRepo.GetDetailNews(ctx, Id)
 	if err != nil {
 		return nil, err
@@ -152,6 +152,21 @@ func (s service) UpdateCustom(ctx context.Context, model *domain.Custom) errs.Er
 
 func (s service) DeleteCustom(ctx context.Context, Id uuid.UUID) errs.Error {
 	if err := s.newsRepo.DeleteCustom(ctx, Id); err != nil {
+		return errs.Wrap(err)
+	}
+	return nil
+}
+
+func (s service) CreateComment(ctx context.Context, model *domain.Comment) errs.Error {
+	if model.Id == uuid.Nil {
+		model.Id = uuid.New()
+		model.CreatedAt = time.Now()
+	}
+	if model.Name == "" {
+		model.Name = "Anonymous"
+	}
+
+	if err := s.newsRepo.CreateComment(ctx, model); err != nil {
 		return errs.Wrap(err)
 	}
 	return nil

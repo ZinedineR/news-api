@@ -24,16 +24,16 @@ type Custom struct {
 
 func (model *Custom) CheckData() string {
 	if model.CustomUrl == "" {
-		return "custom url can't be nill"
+		return "custom url can't be null"
 	}
 	if model.Title == "" {
-		return "title can't be nill"
+		return "title can't be null"
 	}
 	if model.Description == "" {
-		return "description can't be nill"
+		return "description can't be null"
 	}
 	if model.Content == "" {
-		return "content url can't be nill"
+		return "content can't be null"
 	}
 	dashRegexp := regexp.MustCompile(`-`)
 	if !dashRegexp.MatchString(model.CustomUrl) {

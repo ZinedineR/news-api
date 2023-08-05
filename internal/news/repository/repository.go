@@ -110,12 +110,13 @@ func (r repo) CreateNews(ctx context.Context, model *domain.News) errs.Error {
 	return nil
 }
 
-func (r repo) GetDetailNews(ctx context.Context, Id uuid.UUID) (*domain.News, errs.Error) {
+func (r repo) GetDetailNews(ctx context.Context, Id uuid.UUID) (*domain.NewsDetail, errs.Error) {
 	var (
-		models *domain.News
+		models *domain.NewsDetail
 	)
-	if err := r.db.WithContext(ctx).
+	if err := r.db.Debug().WithContext(ctx).
 		Model(&domain.News{}).
+		Preload("Comment").
 		First(&models, Id).
 		Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -132,6 +133,7 @@ func (r repo) GetNews(ctx context.Context) (*[]domain.News, errs.Error) {
 	)
 	if err := r.db.WithContext(ctx).
 		Model(&domain.News{}).
+		Preload("Categories").
 		Where("deleted", false).
 		Find(&models).
 		Error; err != nil {
@@ -223,6 +225,15 @@ func (r repo) DeleteCustom(ctx context.Context, Id uuid.UUID) errs.Error {
 	if err := r.db.WithContext(ctx).
 		Model(&domain.Custom{Id: Id}).
 		Update("deleted", true).
+		Error; err != nil {
+		return errs.Wrap(err)
+	}
+	return nil
+}
+
+func (r repo) CreateComment(ctx context.Context, model *domain.Comment) errs.Error {
+	if err := r.db.WithContext(ctx).
+		Create(&model).
 		Error; err != nil {
 		return errs.Wrap(err)
 	}

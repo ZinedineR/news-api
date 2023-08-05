@@ -17,6 +17,13 @@ type Categories struct {
 	Deleted   bool      `gorm:"default:false;not_null" json:"deleted"`
 }
 
+func (model *Categories) CheckData() string {
+	if model.Title == "" {
+		return "title can't be null"
+	}
+	return ""
+}
+
 func (model *Categories) TableName() string {
 	return CategoriesTableName
 }

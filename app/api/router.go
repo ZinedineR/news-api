@@ -33,6 +33,10 @@ func (h *HttpServe) setupRouter() {
 	h.GuestRoute("GET", "/custom/:id", h.newsHandler.GetDetailCustom)
 	h.UserRoute("PUT", "/custom/:id", h.newsHandler.UpdateCustom)
 	h.UserRoute("DELETE", "/custom/:id", h.newsHandler.DeleteCustom)
+
+	//Comment
+	h.GuestRoute("POST", "/comment/:id", h.newsHandler.CreateComment)
+
 }
 
 func (h *HttpServe) UserRoute(method, path string, f handler.HandlerFnInterface) {
@@ -54,6 +58,8 @@ func (h *HttpServe) GuestRoute(method, path string, f handler.HandlerFnInterface
 	switch method {
 	case "GET":
 		h.router.GET(path, h.base.GuestRunAction(f))
+	case "POST":
+		h.router.POST(path, h.base.GuestRunAction(f))
 	default:
 		panic(fmt.Sprintf(":%s method not allow", method))
 	}
