@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"news-api/internal/user/domain"
 	baseModel "news-api/pkg/db"
@@ -51,7 +52,8 @@ func (r repo) GetUserFullData(ctx context.Context, username, email string) (*dom
 	)
 	if err := r.db.WithContext(ctx).
 		Model(&domain.User{}).
-		Where("email = ?", email).
+		Where("lower(email) = ?", strings.ToLower(email)).
+		Or("lower(username) = ?", strings.ToLower(username)).
 		First(&models).
 		Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
