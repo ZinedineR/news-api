@@ -1,40 +1,31 @@
 package domain
 
 import (
+	"regexp"
 	"time"
 
 	"github.com/google/uuid"
 )
 
 const (
-	NewsTableName = "news"
+	CustomTableName = "custom"
 )
 
-type News struct {
-	Id           uuid.UUID   `gorm:"type:uuid;primary_key;not_null" json:"id"`
-	CategoriesId uuid.UUID   `gorm:"type:uuid;not_null" json:"categories_id"`
-	Title        string      `gorm:"type:varchar" json:"title"`
-	Description  string      `gorm:"type:varchar" json:"description"`
-	Content      string      `gorm:"type:varchar" json:"content"`
-	CreatedAt    time.Time   `gorm:"type:timestamp;not_null" json:"created_at"`
-	UpdatedAt    time.Time   `gorm:"type:timestamp;not_null" json:"updated_at"`
-	Deleted      bool        `gorm:"default:false;not_null" json:"deleted"`
-	Categories   *Categories `gorm:"foreignKey:CategoriesId"`
+type Custom struct {
+	Id          uuid.UUID `gorm:"type:uuid;primary_key;not_null" json:"id"`
+	CustomUrl   string    `gorm:"type:varchar" json:"custom_url"`
+	Title       string    `gorm:"type:varchar" json:"title"`
+	Description string    `gorm:"type:varchar" json:"description"`
+	Content     string    `gorm:"type:varchar" json:"content"`
+	CreatedAt   time.Time `gorm:"type:timestamp;not_null" json:"created_at"`
+	UpdatedAt   time.Time `gorm:"type:timestamp;not_null" json:"updated_at"`
+	Deleted     bool      `gorm:"default:false;not_null" json:"deleted"`
 }
 
-type NewsDetail struct {
-	Id           uuid.UUID  `gorm:"type:uuid;primary_key;not_null" json:"id"`
-	CategoriesId uuid.UUID  `gorm:"type:uuid;not_null" json:"categories_id"`
-	Title        string     `gorm:"type:varchar" json:"title"`
-	Description  string     `gorm:"type:varchar" json:"description"`
-	Content      string     `gorm:"type:varchar" json:"content"`
-	CreatedAt    time.Time  `gorm:"type:timestamp;not_null" json:"created_at"`
-	UpdatedAt    time.Time  `gorm:"type:timestamp;not_null" json:"updated_at"`
-	Deleted      bool       `gorm:"default:false;not_null" json:"deleted"`
-	Comment      []*Comment `gorm:"foreignKey:PageId" json:"comment"`
-}
-
-func (model *News) CheckData() string {
+func (model *Custom) CheckData() string {
+	if model.CustomUrl == "" {
+		return "custom url can't be null"
+	}
 	if model.Title == "" {
 		return "title can't be null"
 	}
@@ -44,14 +35,18 @@ func (model *News) CheckData() string {
 	if model.Content == "" {
 		return "content can't be null"
 	}
+	dashRegexp := regexp.MustCompile(`-`)
+	if !dashRegexp.MatchString(model.CustomUrl) {
+		return "Custom url must contain at least one dash '-'"
+	}
 	return ""
 }
 
-func (model *News) TableName() string {
-	return NewsTableName
+func (model *Custom) TableName() string {
+	return CustomTableName
 }
 
-// func (model *News) CheckData() string {
+// func (model *Custom) CheckData() string {
 // 	if model.Name == "" {
 // 		return "Name can't be null"
 // 	}
@@ -87,7 +82,7 @@ func (model *News) TableName() string {
 // 	return ""
 // }
 
-// func (model *News) HashPassword(password string) error {
+// func (model *Custom) HashPassword(password string) error {
 // 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 // 	if err != nil {
 // 		return err
@@ -95,7 +90,7 @@ func (model *News) TableName() string {
 // 	model.Password = string(bytes)
 // 	return nil
 // }
-// func (model *News) CheckPassword(providedPassword string) errs.Error {
+// func (model *Custom) CheckPassword(providedPassword string) errs.Error {
 // 	err := bcrypt.CompareHashAndPassword([]byte(model.Password), []byte(providedPassword))
 // 	if err != nil {
 // 		return errs.Wrap(err)

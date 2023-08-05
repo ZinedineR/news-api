@@ -32,7 +32,7 @@ func Verify_mail(form *domain.User) errs.Error {
 	mailer.SetHeader("Subject", "Code Verification")
 	link = os.Getenv("RUNNING_HOST") + "authentication/verify/" + form.Id.String()
 	text = "Please, click this link before " + expires.Format(time.RFC1123)
-	mailer.SetBody("text/html", "Hello, "+form.Name+"<br>have a nice day, here's your credentials : <br> Email : "+form.Email+"<br> Password : "+form.Password+"<br><br>"+"Here's your verification link, click link<br><a href='"+link+"'>Click here</a><br>"+text)
+	mailer.SetBody("text/html", "Hello, "+form.Username+"<br>have a nice day, here's your credentials : <br> Email : "+form.Email+"<br> Password : "+form.Password+"<br><br>"+"Here's your verification link, click link<br><a href='"+link+"'>Click here</a><br>"+text)
 
 	dialer := gomail.NewDialer(
 		os.Getenv("CONFIG_SMTP_HOST"),

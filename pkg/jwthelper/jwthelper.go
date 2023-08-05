@@ -14,7 +14,7 @@ var jwtKey = []byte("supersecretkey")
 
 type JWTClaim struct {
 	Id        uuid.UUID `json:"id"`
-	Name      string    `json:"name"`
+	Username  string    `json:"username"`
 	Email     string    `json:"email"`
 	Password  string    `json:"password"`
 	LastLogin time.Time `json:"last_login"`
@@ -26,7 +26,7 @@ func GenerateJWT(data domain.User, verified bool) (tokenString string, err errs.
 	// expirationTime := time.Now().Add(1 * time.Hour)
 	claims := &JWTClaim{
 		Id:        data.Id,
-		Name:      data.Name,
+		Username:  data.Username,
 		Email:     data.Email,
 		Password:  data.Password,
 		LastLogin: time.Now(),
@@ -51,14 +51,15 @@ func ValidateToken(signedToken string) (message string, err error) {
 			return []byte(jwtKey), nil
 		},
 	)
+
 	if err != nil {
-		err = errors.New("couldn't parse claims")
-		return "couldn't parse claims", err
+		err = errors.New("access token not valid")
+		return "access token not valid", err
 	}
 	claims, ok := token.Claims.(*JWTClaim)
 	if !ok {
-		err = errors.New("couldn't parse claims")
-		return "couldn't parse claims", err
+		err = errors.New("access token not valid")
+		return "access token not valid", err
 	}
 	if claims.ExpiresAt.Before(time.Now()) {
 		err = errors.New("token expired")
@@ -80,7 +81,7 @@ func TokenRead(signedToken string) (data *JWTClaim, err error) {
 		},
 	)
 	if err != nil {
-		err = errors.New("couldn't parse claims")
+		err = errors.New("access token not valid")
 		return nil, err
 	}
 	claims, ok := token.Claims.(*JWTClaim)

@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"news-api/internal/user/domain"
 	baseModel "news-api/pkg/db"
@@ -15,6 +16,16 @@ import (
 type repo struct {
 	db   *gorm.DB
 	base *baseModel.PostgreSQLClientRepository
+}
+
+func (r repo) CreateUser(ctx context.Context, model *domain.User) errs.Error {
+	if err := r.db.WithContext(ctx).
+		Create(&model).
+		Error; err != nil {
+		return errs.Wrap(err)
+	}
+	return nil
+
 }
 
 func (r repo) CheckVerified(ctx context.Context, Id uuid.UUID) (*bool, errs.Error) {
@@ -35,13 +46,14 @@ func (r repo) CheckVerified(ctx context.Context, Id uuid.UUID) (*bool, errs.Erro
 
 }
 
-func (r repo) GetUserFullData(ctx context.Context, email string) (*domain.User, errs.Error) {
+func (r repo) GetUserFullData(ctx context.Context, username, email string) (*domain.User, errs.Error) {
 	var (
 		models *domain.User
 	)
 	if err := r.db.WithContext(ctx).
 		Model(&domain.User{}).
-		Where("email = ?", email).
+		Where("lower(email) = ?", strings.ToLower(email)).
+		Or("lower(username) = ?", strings.ToLower(username)).
 		First(&models).
 		Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -55,7 +67,7 @@ func (r repo) GetUserFullData(ctx context.Context, email string) (*domain.User, 
 
 func (r repo) StoreJWT(ctx context.Context, jwt string, Id uuid.UUID) errs.Error {
 	if err := r.db.WithContext(ctx).
-		Model(&domain.User{}).
+		Model(&domain.Verification{}).
 		Where("user_id = ?", Id).
 		Update("jwt", jwt).Error; err != nil {
 		return errs.Wrap(err)
@@ -64,12 +76,12 @@ func (r repo) StoreJWT(ctx context.Context, jwt string, Id uuid.UUID) errs.Error
 
 }
 
-func (r repo) CheckJWT(ctx context.Context, Id uuid.UUID) (*domain.User, errs.Error) {
+func (r repo) CheckJWT(ctx context.Context, Id uuid.UUID) (*domain.Verification, errs.Error) {
 	var (
-		models *domain.User
+		models *domain.Verification
 	)
 	if err := r.db.WithContext(ctx).
-		Model(&domain.User{}).
+		Model(&domain.Verification{}).
 		Where("user_id = ?", Id).
 		First(&models).
 		Error; err != nil {
@@ -79,16 +91,6 @@ func (r repo) CheckJWT(ctx context.Context, Id uuid.UUID) (*domain.User, errs.Er
 		return nil, errs.Wrap(err)
 	}
 	return models, nil
-
-}
-
-func (r repo) CreateUser(ctx context.Context, model *domain.User) errs.Error {
-	if err := r.db.WithContext(ctx).
-		Create(&model).
-		Error; err != nil {
-		return errs.Wrap(err)
-	}
-	return nil
 
 }
 

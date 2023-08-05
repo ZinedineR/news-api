@@ -16,7 +16,7 @@ type Verification struct {
 	UserId    uuid.UUID `gorm:"type:uuid;not_null" json:"user_id"`
 	Expiresat time.Time `gorm:"type:date;not_null" json:"expiresat"`
 	Verified  bool      `gorm:"default:false;null" json:"verified"`
-	JWT       string    `gorm:"type:varchar;not_null" json:"jwt"`
+	Jwt       string    `gorm:"type:varchar;null" json:"jwt"`
 	User      *User     `gorm:"foreignKey:UserId"`
 }
 

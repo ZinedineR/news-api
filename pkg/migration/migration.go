@@ -38,8 +38,12 @@ func Initmigrate(db *gorm.DB) {
 	logrus.Info(fmt.Println("  TableModel [" + (&userDomain.Verification{}).TableName() + "]"))
 	db.AutoMigrate(&newsDomain.Categories{})
 	logrus.Info(fmt.Println("  TableModel [" + (&newsDomain.Categories{}).TableName() + "]"))
-	db.Debug().AutoMigrate(&newsDomain.News{})
+	db.AutoMigrate(&newsDomain.News{})
 	logrus.Info(fmt.Println("  TableModel [" + (&newsDomain.News{}).TableName() + "]"))
+	db.AutoMigrate(&newsDomain.Custom{})
+	logrus.Info(fmt.Println("  TableModel [" + (&newsDomain.Custom{}).TableName() + "]"))
+	db.AutoMigrate(&newsDomain.Comment{})
+	logrus.Info(fmt.Println("  TableModel [" + (&newsDomain.Comment{}).TableName() + "]"))
 
 	// db.AutoMigrate(&entity.Users{})
 	// log.Info().Msg("  TableModel [" + (&entity.Users{}).TableName() + "]")
