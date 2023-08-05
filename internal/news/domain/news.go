@@ -22,6 +22,19 @@ type News struct {
 	Categories   *Categories `gorm:"foreignKey:CategoriesId"`
 }
 
+func (model *News) CheckData() string {
+	if model.Title == "" {
+		return "title can't be nill"
+	}
+	if model.Description == "" {
+		return "description can't be nill"
+	}
+	if model.Content == "" {
+		return "content url can't be nill"
+	}
+	return ""
+}
+
 func (model *News) TableName() string {
 	return NewsTableName
 }

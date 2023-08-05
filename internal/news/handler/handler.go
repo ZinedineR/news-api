@@ -441,6 +441,10 @@ func (h HTTPHandler) CreateNews(ctx *app.Context) *server.ResponseInterface {
 		Description:  ctx.PostForm("description"),
 		Content:      ctx.PostForm("content"),
 	}
+	if bodyCheck := body.CheckData(); bodyCheck != "" {
+		respStatus := responsehelper.GetStatusResponse(http.StatusUnauthorized, bodyCheck)
+		return h.AsJsonInterface(ctx, http.StatusUnauthorized, respStatus)
+	}
 	if err := h.NewsService.CreateNews(ctx, &body); err != nil {
 		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Error in creating news")
 		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
@@ -510,6 +514,10 @@ func (h HTTPHandler) UpdateNews(ctx *app.Context) *server.ResponseInterface {
 		Description:  ctx.PostForm("description"),
 		Content:      ctx.PostForm("content"),
 	}
+	if bodyCheck := body.CheckData(); bodyCheck != "" {
+		respStatus := responsehelper.GetStatusResponse(http.StatusUnauthorized, bodyCheck)
+		return h.AsJsonInterface(ctx, http.StatusUnauthorized, respStatus)
+	}
 	if err := h.NewsService.UpdateNews(ctx, &body); err != nil {
 		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Error in updating news")
 		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
@@ -551,6 +559,10 @@ func (h HTTPHandler) CreateCustom(ctx *app.Context) *server.ResponseInterface {
 		Title:       ctx.PostForm("title"),
 		Description: ctx.PostForm("description"),
 		Content:     ctx.PostForm("content"),
+	}
+	if bodyCheck := body.CheckData(); bodyCheck != "" {
+		respStatus := responsehelper.GetStatusResponse(http.StatusUnauthorized, bodyCheck)
+		return h.AsJsonInterface(ctx, http.StatusUnauthorized, respStatus)
 	}
 	if err := h.NewsService.CreateCustom(ctx, &body); err != nil {
 		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Error in creating custom page")
@@ -614,6 +626,10 @@ func (h HTTPHandler) UpdateCustom(ctx *app.Context) *server.ResponseInterface {
 		Title:       ctx.PostForm("title"),
 		Description: ctx.PostForm("description"),
 		Content:     ctx.PostForm("content"),
+	}
+	if bodyCheck := body.CheckData(); bodyCheck != "" {
+		respStatus := responsehelper.GetStatusResponse(http.StatusUnauthorized, bodyCheck)
+		return h.AsJsonInterface(ctx, http.StatusUnauthorized, respStatus)
 	}
 	if err := h.NewsService.UpdateCustom(ctx, &body); err != nil {
 		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Error in updating custom page")

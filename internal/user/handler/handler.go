@@ -2,7 +2,6 @@ package handler
 
 import (
 	"net/http"
-	"time"
 
 	"news-api/internal/user/domain"
 	UserService "news-api/internal/user/service"
@@ -404,50 +403,23 @@ func (h HTTPHandler) Login(ctx *gin.Context) {
 		h.AsNotVerfied(ctx)
 		return
 	}
-	checkJWT, err := h.UserService.CheckJWT(ctx, resp.Id)
+	tokenString, err = jwthelper.GenerateJWT(*resp, *verified)
 	if err != nil {
-		h.AsDatabaseError(ctx)
+		h.AsInvalidTokenError(ctx)
 		return
-	} else if checkJWT.Jwt == "" {
-		tokenString, err = jwthelper.GenerateJWT(*resp, *verified)
-		if err != nil {
-			h.AsInvalidTokenError(ctx)
-			return
-		}
-		if err := h.UserService.StoreJWT(ctx, tokenString, resp.Id); err != nil {
-			h.AsDataNotFound(ctx)
-			return
-		}
-	} else if checkJWT.Jwt != "" {
-		tokenString, err = jwthelper.GenerateJWT(*resp, *verified)
-		if err != nil {
-			h.AsInvalidTokenError(ctx)
-			return
-		}
-		JWTRead, err := jwthelper.TokenRead(checkJWT.Jwt)
-		if err != nil {
-			h.AsInvalidTokenError(ctx)
-			return
-		}
-		if JWTRead.LastLogin.Day() == time.Now().Day() {
-			h.AsJWTExist(ctx)
-			return
-		} else {
-			if err := h.UserService.StoreJWT(ctx, tokenString, resp.Id); err != nil {
-				h.AsDataNotFound(ctx)
-				return
-			}
-			ctx.JSON(http.StatusOK, gin.H{
-				"token": tokenString,
-			})
-			return
-		}
 	}
-
+	if err := h.UserService.StoreJWT(ctx, tokenString, resp.Id); err != nil {
+		h.AsDataNotFound(ctx)
+		return
+	}
 	ctx.JSON(http.StatusOK, gin.H{
 		"token": tokenString,
 	})
 }
+
+// ctx.JSON(http.StatusOK, gin.H{
+// 	"token": tokenString,
+// })
 
 func (h HTTPHandler) UpdateVerification(ctx *gin.Context) {
 	idParam := ctx.Param("id")

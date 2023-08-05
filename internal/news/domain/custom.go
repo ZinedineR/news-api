@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"regexp"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,6 +20,26 @@ type Custom struct {
 	CreatedAt   time.Time `gorm:"type:timestamp;not_null" json:"created_at"`
 	UpdatedAt   time.Time `gorm:"type:timestamp;not_null" json:"updated_at"`
 	Deleted     bool      `gorm:"default:false;not_null" json:"deleted"`
+}
+
+func (model *Custom) CheckData() string {
+	if model.CustomUrl == "" {
+		return "custom url can't be nill"
+	}
+	if model.Title == "" {
+		return "title can't be nill"
+	}
+	if model.Description == "" {
+		return "description can't be nill"
+	}
+	if model.Content == "" {
+		return "content url can't be nill"
+	}
+	dashRegexp := regexp.MustCompile(`-`)
+	if !dashRegexp.MatchString(model.CustomUrl) {
+		return "Custom url must contain at least one dash '-'"
+	}
+	return ""
 }
 
 func (model *Custom) TableName() string {

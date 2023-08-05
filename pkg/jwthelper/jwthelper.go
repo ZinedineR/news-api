@@ -51,14 +51,15 @@ func ValidateToken(signedToken string) (message string, err error) {
 			return []byte(jwtKey), nil
 		},
 	)
+
 	if err != nil {
-		err = errors.New("couldn't parse claims")
-		return "couldn't parse claims", err
+		err = errors.New("access token not valid")
+		return "access token not valid", err
 	}
 	claims, ok := token.Claims.(*JWTClaim)
 	if !ok {
-		err = errors.New("couldn't parse claims")
-		return "couldn't parse claims", err
+		err = errors.New("access token not valid")
+		return "access token not valid", err
 	}
 	if claims.ExpiresAt.Before(time.Now()) {
 		err = errors.New("token expired")
@@ -80,7 +81,7 @@ func TokenRead(signedToken string) (data *JWTClaim, err error) {
 		},
 	)
 	if err != nil {
-		err = errors.New("couldn't parse claims")
+		err = errors.New("access token not valid")
 		return nil, err
 	}
 	claims, ok := token.Claims.(*JWTClaim)
