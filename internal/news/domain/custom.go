@@ -19,6 +19,19 @@ type Custom struct {
 	Content     string    `gorm:"type:varchar" json:"content"`
 	CreatedAt   time.Time `gorm:"type:timestamp;not_null" json:"created_at"`
 	UpdatedAt   time.Time `gorm:"type:timestamp;not_null" json:"updated_at"`
+	CreatedBy   string    `gorm:"type:varchar" json:"created_by"`
+	Deleted     bool      `gorm:"default:false;not_null" json:"deleted"`
+}
+
+type CustomDetail struct {
+	Id          uuid.UUID `gorm:"type:uuid;primary_key;not_null" json:"id"`
+	CustomUrl   string    `gorm:"type:varchar" json:"custom_url"`
+	Title       string    `gorm:"type:varchar" json:"title"`
+	Description string    `gorm:"type:varchar" json:"description"`
+	Content     string    `gorm:"type:varchar" json:"content"`
+	CreatedAt   string    `gorm:"type:timestamp;not_null" json:"created_at"`
+	UpdatedAt   string    `gorm:"type:timestamp;not_null" json:"updated_at"`
+	CreatedBy   string    `gorm:"type:varchar" json:"created_by"`
 	Deleted     bool      `gorm:"default:false;not_null" json:"deleted"`
 }
 

@@ -8,6 +8,7 @@ import (
 	"news-api/internal/base/handler"
 	"news-api/internal/news/domain"
 	NewsService "news-api/internal/news/service"
+	"news-api/pkg/jwthelper"
 	"news-api/pkg/responsehelper"
 	"news-api/pkg/server"
 
@@ -558,11 +559,18 @@ func (h HTTPHandler) DeleteNews(ctx *app.Context) *server.ResponseInterface {
 }
 
 func (h HTTPHandler) CreateCustom(ctx *app.Context) *server.ResponseInterface {
+	tokenString := ctx.GetHeader("Authorization")
+	JWTRead, err := jwthelper.TokenRead(tokenString)
+	if err != nil {
+		respStatus := responsehelper.GetStatusResponse(http.StatusBadRequest, "Error in reading token")
+		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
+	}
 	body := domain.Custom{
 		CustomUrl:   ctx.PostForm("custom_url"),
 		Title:       ctx.PostForm("title"),
 		Description: ctx.PostForm("description"),
 		Content:     ctx.PostForm("content"),
+		CreatedBy:   JWTRead.Username,
 	}
 	if bodyCheck := body.CheckData(); bodyCheck != "" {
 		respStatus := responsehelper.GetStatusResponse(http.StatusUnauthorized, bodyCheck)
@@ -594,11 +602,24 @@ func (h HTTPHandler) GetDetailCustom(ctx *app.Context) *server.ResponseInterface
 		return h.AsJsonInterface(ctx, http.StatusBadRequest, respStatus)
 	}
 	respStatus := responsehelper.GetStatusResponse(http.StatusOK, "")
-
+	timeFormat := "02-January-2006"
+	CreateFormat := resp.CreatedAt.Format(timeFormat)
+	UpdateFormat := resp.UpdatedAt.Format(timeFormat)
+	response := &domain.CustomDetail{
+		Id:          resp.Id,
+		CustomUrl:   resp.CustomUrl,
+		Title:       resp.Title,
+		Description: resp.Description,
+		Content:     resp.Content,
+		CreatedAt:   CreateFormat,
+		UpdatedAt:   UpdateFormat,
+		CreatedBy:   resp.CreatedBy,
+		Deleted:     resp.Deleted,
+	}
 	finalResponse := struct {
 		*BaseDomain.Status
-		*domain.Custom
-	}{respStatus, resp}
+		*domain.CustomDetail
+	}{respStatus, response}
 	return h.AsJsonInterface(ctx, http.StatusOK, finalResponse)
 }
 
