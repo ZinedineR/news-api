@@ -147,9 +147,9 @@ func (r repo) GetNews(ctx context.Context) (*[]domain.News, errs.Error) {
 }
 
 func (r repo) UpdateNews(ctx context.Context, model *domain.News) errs.Error {
-	if err := r.db.WithContext(ctx).
+	if err := r.db.Debug().WithContext(ctx).
 		Model(&domain.News{Id: model.Id}).
-		Select("categories_id, title, description, content, updated_at").
+		Select("categories_id", "title", "description", "content", "updated_at").
 		Updates(model).
 		Error; err != nil {
 		return errs.Wrap(err)
@@ -213,7 +213,7 @@ func (r repo) GetCustom(ctx context.Context) (*[]domain.Custom, errs.Error) {
 func (r repo) UpdateCustom(ctx context.Context, model *domain.Custom) errs.Error {
 	if err := r.db.WithContext(ctx).
 		Model(&domain.Custom{Id: model.Id}).
-		Select("categories_id, title, description, content, updated_at").
+		Select("custom_url", "title", "description", "content", "updated_at").
 		Updates(model).
 		Error; err != nil {
 		return errs.Wrap(err)
