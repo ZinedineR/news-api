@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"io"
 	"log"
 	"os"
 
@@ -41,11 +40,11 @@ func init() {
 			}
 			defer fout.Close()
 
-			_, err = io.Copy(fout, fin)
+			// _, err = io.Copy(fout, fin)
 
-			if err != nil {
-				logrus.Warningln("Can't find env.file. To use system's env vars for now")
-			}
+			// if err != nil {
+			// 	logrus.Warningln("Can't find env.file. To use system's env vars for now")
+			// }
 		}
 	}
 }
