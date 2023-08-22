@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"io"
+	"log"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -27,7 +29,23 @@ func init() {
 		if os.Getenv("APP_ENV") == "development" {
 			logrus.Fatalln("unable to load environment variable", err.Error())
 		} else {
-			logrus.Warningln("Can't find env.file. To use system's env vars for now")
+			fin, err := os.Open(".env.example")
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer fin.Close()
+
+			fout, err := os.Create(".env")
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer fout.Close()
+
+			_, err = io.Copy(fout, fin)
+
+			if err != nil {
+				logrus.Warningln("Can't find env.file. To use system's env vars for now")
+			}
 		}
 	}
 }
