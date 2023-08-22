@@ -7,8 +7,6 @@ import (
 	"os"
 	"strconv"
 
-	"news-api/pkg/migration"
-
 	appConfiguration "news-api/app/appconf"
 	"news-api/internal/base/handler"
 
@@ -54,7 +52,7 @@ func initPostgreSQL() {
 	}
 
 	postgresClientRepo, _ = db.NewMPostgreSQLRepository(host, uname, pass, dbname, port, gConfig)
-	migration.Initmigrate(postgresClientRepo.DB)
+	// migration.Initmigrate(postgresClientRepo.DB)
 
 }
 
