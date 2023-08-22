@@ -29,11 +29,11 @@ func init() {
 		if os.Getenv("APP_ENV") == "development" {
 			logrus.Fatalln("unable to load environment variable", err.Error())
 		} else {
-			fin, err := os.Open("./.env.example")
-			if err != nil {
-				log.Fatal(err)
-			}
-			defer fin.Close()
+			// fin, err := os.Open("./.env.example")
+			// if err != nil {
+			// 	log.Fatal(err)
+			// }
+			// defer fin.Close()
 
 			fout, err := os.Create("./.env")
 			if err != nil {
