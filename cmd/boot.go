@@ -17,6 +17,7 @@ import (
 	userRepo "news-api/internal/user/repository"
 	userService "news-api/internal/user/service"
 	"news-api/pkg/db"
+	"news-api/pkg/migration"
 
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -52,6 +53,9 @@ func initPostgreSQL() {
 	}
 
 	postgresClientRepo, _ = db.NewMPostgreSQLRepository(host, uname, pass, dbname, port, gConfig)
+	if os.Getenv("APP_ENV") == "development" {
+		migration.Initmigrate(postgresClientRepo.DB)
+	}
 	// migration.Initmigrate(postgresClientRepo.DB)
 
 }
