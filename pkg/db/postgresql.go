@@ -31,7 +31,7 @@ func NewMPostgreSQLRepository(host, uname, pass, dbname string, port int, config
 	if os.Getenv("APP_ENV") == "development" {
 		dsn = fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable TimeZone=%s", host, uname, pass, dbname, port, tz)
 	} else {
-		dsn = fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=require TimeZone=%s", host, uname, pass, dbname, port, tz)
+		dsn = fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=require TimeZone=%s options=endpoint=ep-small-hall-77491680", host, uname, pass, dbname, port, tz)
 
 	}
 	sqlDB, err := sql.Open("pgx", dsn)
